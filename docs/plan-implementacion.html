@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan de Implementación · Sistema de Prospección de Clientes</title>
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-dark: #1e40af;
+      --accent: #16a34a;
+      --accent-amber: #d97706;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header.hero {
+      background: linear-gradient(135deg, #172554 0%, #1d4ed8 60%, #22d3ee 100%);
+      color: #fff;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    header.hero h1 { font-size: 2rem; letter-spacing: .3px; }
+    header.hero p.sub { margin-top: 8px; opacity: .92; max-width: 720px; margin-inline: auto; }
+    .badges { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.35);
+      padding: 4px 12px; border-radius: 999px; font-size: .78rem;
+    }
+
+    main { max-width: 1080px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px; margin-bottom: 32px;
+    }
+    .toc b { display: block; margin-bottom: 8px; }
+    .toc ol { margin-left: 20px; color: var(--muted); font-size: .95rem; }
+
+    section.card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+    section.card h2 {
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px; margin-bottom: 18px;
+    }
+    section.card h3 { margin: 18px 0 8px; font-size: 1.05rem; color: var(--primary-dark); }
+
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; }
+
+    .pill {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      font-size: .75rem; font-weight: 600;
+    }
+    .pill--alta { background: #fee2e2; color: #b91c1c; }
+    .pill--media { background: #fef3c7; color: #b45309; }
+    .pill--baja { background: #e0f2fe; color: #0369a1; }
+
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .93rem; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #f8fafc; color: var(--primary-dark); }
+
+    code, pre {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .87rem;
+    }
+    code { background: #f1f5f9; padding: 1px 6px; border-radius: 6px; color: #0f172a; }
+    pre {
+      background: #0f172a; color: #e2e8f0;
+      padding: 18px; border-radius: 10px; overflow-x: auto;
+      margin: 12px 0; font-size: .83rem; line-height: 1.5;
+    }
+    pre .k { color: #93c5fd; }
+    pre .s { color: #86efac; }
+
+    /* ---- Mockups / wireframes ---- */
+    .mockup {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      margin: 16px 0;
+    }
+    .mockup__bar {
+      background: #f8fafc; border-bottom: 1px solid var(--border);
+      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot--r { background: #fca5a5; } .dot--y { background: #fcd34d; } .dot--g { background: #86efac; }
+    .mockup__url { color: var(--muted); font-size: .78rem; margin-left: 10px; }
+    .mockup__body { padding: 20px; }
+
+    .phone {
+      max-width: 360px; margin: 0 auto; border: 8px solid #0f172a;
+      border-radius: 28px; overflow: hidden; background: #fff;
+    }
+    .appbar { background: var(--primary); color: #fff; padding: 14px 16px; font-weight: 600; }
+    .meta-line { display: flex; justify-content: space-between; margin-top: 6px; font-size: .82rem; opacity: .9; }
+    .field {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font: inherit; background: #f8fafc;
+    }
+    .btn { border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; font: inherit; }
+    .btn--primary { background: var(--primary); color: #fff; width: 100%; }
+    .btn--ghost { background: #f1f5f9; color: var(--ink); }
+
+    .opp-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 10px;
+    }
+    .kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 14px 0; }
+    .kpi { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+    .kpi b { display: block; font-size: 1.5rem; color: var(--primary); }
+    .kpi span { font-size: .75rem; color: var(--muted); }
+
+    .rule-a {
+      border-left: 4px solid var(--accent-amber); background: #fffbeb;
+      padding: 14px 16px; border-radius: 8px; margin: 12px 0;
+    }
+    .rule-b {
+      border-left: 4px solid var(--accent); background: #f0fdf4;
+      padding: 14px 16px; border-radius: 8px; margin: 12px 0;
+    }
+    .rule-x {
+      border-left: 4px solid var(--primary); background: #eff6ff;
+      padding: 14px 16px; border-radius: 8px; margin: 12px 0;
+    }
+
+    .note { background: #f8fafc; border: 1px dashed #cbd5e1; font-size: .9rem; padding: 12px 14px; border-radius: 8px; margin-top: 14px; }
+    footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 24px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Plan de Implementación</h1>
+  <p class="sub">
+    Sistema Automatizado de Prospección de Clientes — Google Places API v1 + Supabase + TypeScript
+  </p>
+  <div class="badges">
+    <span class="badge">Node.js ≥ 18</span>
+    <span class="badge">TypeScript</span>
+    <span class="badge">Supabase / PostgreSQL</span>
+    <span class="badge">Vercel · Render</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== TOC ===================== -->
+  <div class="toc">
+    <b>Contenido del plan</b>
+    <ol>
+      <li>Resumen ejecutivo y stack</li>
+      <li>Arquitectura y flujo de datos</li>
+      <li>Esquema de base de datos (Supabase SQL)</li>
+      <li>Reglas de negocio</li>
+      <li>Prototipos de interfaz (UI)</li>
+      <li>Estructura del backend e implementación</li>
+      <li>Librerías y recursos utilizados</li>
+      <li>Despliegue (Vercel / Render) y variables de entorno</li>
+      <li>Cronograma de etapas</li>
+    </ol>
+  </div>
+
+  <!-- ===================== 1. RESUMEN ===================== -->
+  <section class="card">
+    <h2>1. Resumen ejecutivo y stack</h2>
+    <p>
+      El sistema recibe un punto (<em>latitud, longitud</em>) y un radio (metros),
+      consulta negocios cercanos en la <strong>Google Places API (nueva v1)</strong>
+      mediante <code>places:searchNearby</code>, aplica dos reglas de negocio para
+      evaluar la madurez tecnológica de cada negocio y registra prospectos junto con
+      oportunidades de venta generadas automáticamente en Supabase.
+    </p>
+    <div class="grid3" style="margin-top:14px;">
+      <div class="kpi"><b>2</b><span>Reglas de negocio</span></div>
+      <div class="kpi"><b>2</b><span>Servicios a ofertar</span></div>
+      <div class="kpi"><b>2</b><span>Plataformas de despliegue</span></div>
+    </div>
+    <h3>Stack tecnológico</h3>
+    <table>
+      <tr><th>Capa</th><th>Tecnología</th><th>Motivo</th></tr>
+      <tr><td>Base de datos</td><td>Supabase (PostgreSQL)</td><td>Postgres + Auth + APIs REST/SQL listas</td></tr>
+      <tr><td>Backend</td><td>Node.js + TypeScript</td><td>Escalable, tipado estricto, listo para Serverless</td></tr>
+      <tr><td>Consumo API</td><td>Google Places API v1</td><td>Datos oficiales de negocios (web, reseñas, rating)</td></tr>
+      <tr><td>Cliente DB</td><td>@supabase/supabase-js</td><td>CRUD directo, compatible Node/Edge</td></tr>
+      <tr><td>Framework HTTP</td><td>Express 4 + Vercel Functions</td><td>Render usa Express; Vercel usa api/*.ts</td></tr>
+    </table>
+  </section>
+
+  <!-- ===================== 2. ARQUITECTURA ===================== -->
+  <section class="card">
+    <h2>2. Arquitectura y flujo de datos</h2>
+    <pre><span class="k">Request</span> (POST /api/prospectar)
+   │  { latitud, longitud, radio, tipos[] }
+   ▼
+┌──────────────────────────────────────────────┐
+│       Controller (Express / Vercel)          │  api/prospectar.ts · src/controllers
+│  validación Joi · rate-limit · CORS · helmet │
+└──────────────┬───────────────────────────────┘
+               ▼
+┌──────────────────────────────────────────────┐
+│        services / prospector.ts              │
+│  1. POST places.googleapis.com/v1/places:    │
+│        searchNearby  (fetch + AbortController)│
+│  2. evaluarReglasNegocio(place) → [A|B]      │
+│  3. generarArgumentoVenta(place, servicio)    │
+└──────────────┬───────────────────────────────┘
+               ▼
+┌──────────────────────────────────────────────┐
+│        Supabase (PostgreSQL + RLS)           │
+│   upsert prospectos (onConflict place_id)    │
+│   insert diagnosticos (fk prospecto_id)      │
+└──────────────────────────────────────────────┘</pre>
+    <div class="note">
+      <strong>Robustez:</strong> cada lugar se procesa en su propio <code>try/catch</code>;
+      un fallo de Google Places o de Supabase aborta solo ese registro, no el lote completo.
+      Se usa <code>AbortController</code> (timeout 10 s) para evitar cuelgues.
+    </div>
+  </section>
+
+  <!-- ===================== 3. BD ===================== -->
+  <section class="card">
+    <h2>3. Esquema de base de datos</h2>
+    <p>Archivo listo para el SQL Editor de Supabase: <code>supabase/schema.sql</code></p>
+    <div class="grid2">
+      <div>
+        <h3>Tabla <code>prospectos</code></h3>
+        <table>
+          <tr><th>Campo</th><th>Tipo</th></tr>
+          <tr><td>id</td><td>uuid PK (gen_random_uuid())</td></tr>
+          <tr><td>nombre</td><td>text NOT NULL</td></tr>
+          <tr><td>direccion</td><td>text</td></tr>
+          <tr><td>latitud</td><td>numeric(10,8) NOT NULL</td></tr>
+          <tr><td>longitud</td><td>numeric(11,8) NOT NULL</td></tr>
+          <tr><td>cantidad_resenias</td><td>integer DEFAULT 0</td></tr>
+          <tr><td>calificacion</td><td>numeric(3,2)</td></tr>
+          <tr><td>tiene_web</td><td>boolean DEFAULT false</td></tr>
+          <tr><td>url_web</td><td>text</td></tr>
+          <tr><td>place_id</td><td>text UNIQUE</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamptz DEFAULT now()</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Tabla <code>diagnosticos</code> (1→N)</h3>
+        <table>
+          <tr><th>Campo</th><th>Tipo</th></tr>
+          <tr><td>id</td><td>uuid PK</td></tr>
+          <tr><td>prospecto_id</td><td>uuid FK → prospectos(id) ON DELETE CASCADE</td></tr>
+          <tr><td>servicio_sugerido</td><td>text NOT NULL</td></tr>
+          <tr><td>prioridad</td><td>text CHECK ('Alta','Media','Baja')</td></tr>
+          <tr><td>argumento_venta</td><td>text NOT NULL</td></tr>
+          <tr><td>created_at</td><td>timestamptz DEFAULT now()</td></tr>
+        </table>
+      </div>
+    </div>
+    <h3>Seguridad (RLS)</h3>
+    <p>
+      RLS habilitado en ambas tablas. Políticas <code>select/insert/update</code>
+      basadas en <code>true</code> para desarrollo. En producción, la nota al pie del
+      SQL revoca permisos de la <code>anon key</code> y deja solo <code>service_role</code>.
+    </p>
+  </section>
+
+  <!-- ===================== 4. REGLAS ===================== -->
+  <section class="card">
+    <h2>4. Reglas de negocio (diagnóstico)</h2>
+    <div class="rule-a">
+      <b>Regla A — Presencia Digital</b>
+      <p>Si <code>websiteUri</code> es nulo o vacío → oportunidad <strong>Desarrollo de Landing Page / Presencia Digital</strong>. <br />
+      <span class="pill pill--alta">Prioridad: Alta</span></p>
+    </div>
+    <div class="rule-b">
+      <b>Regla B — Sistemas B2B</b>
+      <p>Si <code>userRatingCount &gt; 150</code> → oportunidad <strong>Migración a Base de Datos Relacional y Sistema de Gestión</strong>.<br />
+      <span class="pill pill--alta">Alta si no tiene web</span>
+      <span class="pill pill--media">Media si ya tiene web</span></p>
+    </div>
+    <div class="rule-x">
+      <b>Ambas reglas pueden activarse a la vez</b>
+      <p>Un negocio sin web y con +150 reseñas genera <strong>dos</strong> diagnósticos (dos filas en <code>diagnosticos</code>).</p>
+    </div>
+    <table>
+      <tr><th>Escenario</th><th>Landing Page</th><th>Sistema B2B</th></tr>
+      <tr><td>Sin web · ≤150 reseñas</td><td><span class="pill pill--alta">Sí · Alta</span></td><td>—</td></tr>
+      <tr><td>Sin web · &gt;150 reseñas</td><td><span class="pill pill--alta">Sí · Alta</span></td><td><span class="pill pill--alta">Sí · Alta</span></td></tr>
+      <tr><td>Con web · &gt;150 reseñas</td><td>—</td><td><span class="pill pill--media">Sí · Media</span></td></tr>
+      <tr><td>Con web · ≤150 reseñas</td><td>—</td><td>—</td></tr>
+    </table>
+    <p><strong>Argumento de venta:</strong> texto parametrizado con nombre, rating y nº de reseñas del negocio, listo para pegar en correo o WhatsApp.</p>
+  </section>
+
+  <!-- ===================== 5. PROTOTIPOS UI ===================== -->
+  <section class="card">
+    <h2>5. Prototipos de interfaz</h2>
+    <p>El backend expone la API; estos prototipos muestran la UX de referencia para el panel web (próxima fase).</p>
+
+    <div class="grid2">
+      <!-- Dashboard -->
+      <div class="mockup">
+        <div class="mockup__bar">
+          <span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span>
+          <span class="mockup__url">app.prospeccion.dev/dashboard</span>
+        </div>
+        <div class="mockup__body">
+          <div style="font-weight:700;font-size:1.05rem;">Prospección · Dashboard</div>
+          <div class="kpi-row">
+            <div class="kpi"><b>248</b><span>Prospectos</span></div>
+            <div class="kpi"><b>132</b><span>Sin web</span></div>
+            <div class="kpi"><b>61</b><span>Potencial B2B</span></div>
+          </div>
+          <div class="opp-row">
+            <div><strong>Pizzería Don Pepe</strong><br /><small style="color:var(--muted);">Miraflores · ★ 4.3 · 320 reseñas</small></div>
+            <div style="display:flex;gap:6px;">
+              <span class="pill pill--alta">Landing</span>
+              <span class="pill pill--alta">B2B</span>
+            </div>
+          </div>
+          <div class="opp-row">
+            <div><strong>Ferretería El Tornillo</strong><br /><small style="color:var(--muted);">SJL · ★ 4.6 · 210 reseñas</small></div>
+            <span class="pill pill--alta">Landing</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle prospecto -->
+      <div class="mockup">
+        <div class="mockup__bar">
+          <span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span>
+          <span class="mockup__url">app.prospeccion.dev/prospecto/24</span>
+        </div>
+        <div class="mockup__body">
+          <div style="font-weight:700;font-size:1.05rem;">Pizzería Don Pepe</div>
+          <div class="meta-line"><span>Dirección</span><span>Av. Larco 455, Miraflores</span></div>
+          <div class="meta-line"><span>Calificación</span><span>★ 4.3 / 5</span></div>
+          <div class="meta-line"><span>Reseñas</span><span>320</span></div>
+          <div class="meta-line"><span>Sitio web</span><span style="color:#b91c1c;font-weight:600;">No tiene</span></div>
+          <div style="margin-top:14px;">
+            <div class="opp-row">
+              <div><strong>Landing Page</strong><br /><span class="pill pill--alta">Prioridad Alta</span></div>
+            </div>
+            <div class="opp-row">
+              <div><strong>Sistema B2B</strong><br /><span class="pill pill--alta">Prioridad Alta</span></div>
+            </div>
+          </div>
+          <button class="btn btn--primary" style="margin-top:16px;">Copiar argumento · WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:0;">
+      <!-- Formulario de prospección -->
+      <div class="phone">
+        <div class="appbar">Nueva prospección</div>
+        <div style="padding:16px;">
+          <label style="font-size:.82rem;color:var(--muted);">Latitud (centro)</label>
+          <input class="field" type="number" placeholder="-12.046" value="-12.046" style="margin-bottom:10px;" />
+          <label style="font-size:.82rem;color:var(--muted);">Longitud</label>
+          <input class="field" type="number" placeholder="-77.043" value="-77.043" style="margin-bottom:10px;" />
+          <label style="font-size:.82rem;color:var(--muted);">Radio (metros)</label>
+          <input class="field" type="number" placeholder="5000" value="5000" style="margin-bottom:12px;" />
+          <button class="btn btn--primary">Buscar oportunidades</button>
+          <div class="note" style="font-size:.8rem;margin-top:12px;">
+            Llamará a <code>POST /api/prospectar</code> y guardará los resultados en Supabase.
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte / argumento -->
+      <div class="phone">
+        <div class="appbar">Mensaje generado</div>
+        <div style="padding:16px;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font-size:.82rem;">
+            Hola <b>Pizzería Don Pepe</b>: hemos notado que cuenta con <b>320 reseñas</b>
+            y una calificación de 4.3/5, pero actualmente <b>NO tiene presencia web</b>.
+            Esto está dejando fuera a clientes que buscan su tipo de negocio en Google.
+            Le propongo desarrollar una landing page optimizada para posicionarlo en el mercado digital.
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn btn--ghost" style="flex:1;">Copiar</button>
+            <button class="btn btn--primary" style="flex:1;">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6. BACKEND ===================== -->
+  <section class="card">
+    <h2>6. Estructura del backend e implementación</h2>
+    <pre>
+.
+├── api/                          # Vercel Functions
+│   ├── prospectar.ts             # POST /api/prospectar
+│   └── health.ts                 # GET  /api/health
+├── src/
+│   ├── app.ts                    # App Express (helmet, cors, rate-limit)
+│   ├── index.ts                  # Entrypoint local (PORT)
+│   ├── config/
+│   │   ├── supabase.ts           # Cliente @supabase/supabase-js
+│   │   └── google-places.ts      # URL base, tipos, API key
+│   ├── controllers/
+│   │   └── prospectController.ts # Handlers HTTP
+│   ├── middleware/
+│   │   ├── errorHandler.ts       # ApiError + asyncHandler
+│   │   ├── validator.ts          # Esquema Joi
+│   │   └── logger.ts
+│   ├── routes/
+│   │   └── prospect.ts           # Rutas Express
+│   ├── services/
+│   │   └── prospector.ts         # Lógica principal (fetch + reglas + insert)
+│   └── types/                    # Tipos estrictos Places / DB / API
+├── supabase/schema.sql
+├── vercel.json · render.yaml
+└── package.json</pre>
+
+    <h3>Fragmento central — reglas de negocio</h3>
+    <pre>function evaluarReglasNegocio(place: GooglePlace): ScoreDiagnostico[] {
+  const ligas: ScoreDiagnostico[] = [];
+  const tieneWeb = place.websiteUri ? place.websiteUri.trim().length > 0 : false;
+  const altoVolumen = (place.userRatingCount ?? 0) > 150;
+
+  if (!tieneWeb) ligas.push({ servicio: SERVICIO_LANDING, prioridad: 'Alta' });
+  if (altoVolumen) ligas.push({
+    servicio: SERVICIO_B2B,
+    prioridad: tieneWeb ? 'Media' : 'Alta',
+  });
+  return ligas;
+}</pre>
+
+    <h3>Fragmento — búsqueda en Google Places</h3>
+    <pre>const response = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Goog-Api-Key': process.env.GOOGLE_PLACES_API_KEY,
+    'X-Goog-FieldMask':
+      'places.id,places.displayName,places.formattedAddress,places.rating,' +
+      'places.userRatingCount,places.websiteUri,places.location',
+  },
+  body: JSON.stringify({
+    locationRestriction: { circle: { center: { latitude, longitude }, radius } },
+    includedTypes: tipos, maxResultCount: 20, languageCode: 'es',
+  }),
+});</pre>
+  </section>
+
+  <!-- ===================== 7. LIBRERIAS ===================== -->
+  <section class="card">
+    <h2>7. Librerías y recursos utilizados</h2>
+    <h3>Dependencias de producción</h3>
+    <table>
+      <tr><th>Librería</th><th>Versión</th><th>Función</th></tr>
+      <tr><td><code>@supabase/supabase-js</code></td><td>^2.47.10</td><td>Cliente de base de datos (insert, upsert, select)</td></tr>
+      <tr><td><code>express</code></td><td>^4.21.2</td><td>Servidor web para Render / local</td></tr>
+      <tr><td><code>helmet</code></td><td>^8.0.0</td><td>Cabeceras HTTP seguras</td></tr>
+      <tr><td><code>cors</code></td><td>^2.8.5</td><td>Control de orígenes</td></tr>
+      <tr><td><code>express-rate-limit</code></td><td>^7.5.0</td><td>Protección contra abuso del endpoint</td></tr>
+      <tr><td><code>joi</code></td><td>^17.13.3</td><td>Validación de entrada</td></tr>
+      <tr><td><code>dotenv</code></td><td>^16.4.5</td><td>Variables de entorno</td></tr>
+    </table>
+    <h3>Dev dependencies</h3>
+    <table>
+      <tr><th>Librería</th><th>Versión</th><th>Función</th></tr>
+      <tr><td><code>typescript</code></td><td>^5.7.2</td><td>Compilador TS</td></tr>
+      <tr><td><code>ts-node</code></td><td>^10.9.2</td><td>Ejecución en desarrollo</td></tr>
+      <tr><td><code>@types/node</code></td><td>^20.17.10</td><td>Tipos de Node</td></tr>
+      <tr><td><code>@types/express</code> · <code>@types/cors</code></td><td>—</td><td>Tipos TS</td></tr>
+    </table>
+    <h3>Recursos externos</h3>
+    <ul>
+      <li>Google Places API — <a href="https://developers.google.com/maps/documentation/places/web-service/search-nearby" target="_blank">searchNearby · fieldMask · paginación</a></li>
+      <li>Supabase — <a href="https://supabase.com/docs" target="_blank">Postgres, RLS, Storage</a></li>
+      <li>Vercel Functions — <a href="https://vercel.com/docs/functions" target="_blank">api/ · runtime · límites</a></li>
+      <li>Render Web Services — <a href="https://render.com/docs/web-services" target="_blank">build/start · puerto · health check</a></li>
+      <li>Jordan en Google Console: activa <em>Places API (nueva)</em> y restringe la key</li>
+    </ul>
+  </section>
+
+  <!-- ===================== 8. DESPLIEGUE ===================== -->
+  <section class="card">
+    <h2>8. Despliegue y variables de entorno</h2>
+    <h3>Variables de entorno (<code>.env</code>)</h3>
+    <pre>SUPABASE_URL=https://TU-PROYECTO.supabase.co
+SUPABASE_KEY=eyJ...          <span class="k"># anon o service_role</span>
+GOOGLE_PLACES_API_KEY=AIza... <span class="k"># Places API (nueva)</span>
+PORT=3000
+NODE_ENV=production
+CORS_ORIGIN=*
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100</pre>
+
+    <h3>Vercel</h3>
+    <ol>
+      <li>Empuja el repo (este repo PS) a GitHub.</li>
+      <li>Vercel → <em>Add New Project</em> → importar repo; detecta <code>api/*.ts</code>.</li>
+      <li>Configura las 4 variables de entorno (URL, KEY, GOOGLE KEY, CORS_ORIGIN).</li>
+      <li><em>Deploy</em>. Endpoints: <code>/api/prospectar</code> y <code>/api/health</code>.</li>
+    </ol>
+    <pre><span class="k">vercel.json</span>
+{
+  "version": 2,
+  "functions": { "api/*.ts": { "runtime": "nodejs20.x", "memory": 1024, "maxDuration": 30 } },
+  "routes": [
+    { "src": "/api/prospectar", "dest": "/api/prospectar.ts" },
+    { "src": "/api/health",     "dest": "/api/health.ts" }
+  ]
+}</pre>
+
+    <h3>Render</h3>
+    <ol>
+      <li>Render → <em>New → Web Service</em> → conectar repo GitHub.</li>
+      <li><strong>Build:</strong> <code>npm install &amp;&amp; npm run build</code></li>
+      <li><strong>Start:</strong> <code>npm start</code></li>
+      <li>Health check: <code>/api/health</code>; puerto render usa <code>PORT</code> por defecto.</li>
+      <li>Crear servicio. Queda en <code>https://TU-SERVICIO.onrender.com/api/prospectar</code>.</li>
+    </ol>
+  </section>
+
+  <!-- ===================== 9. CRONOGRAMA ===================== -->
+  <section class="card">
+    <h2>9. Cronograma de etapas</h2>
+    <table>
+      <tr><th>Etapa</th><th>Entregable</th><th>Estado</th></tr>
+      <tr><td>1. Base de datos</td><td><code>supabase/schema.sql</code></td><td>✅ Listo</td></tr>
+      <tr><td>2. Backend core</td><td><code>services/prospector.ts</code> + tipos</td><td>✅ Listo</td></tr>
+      <tr><td>3. API HTTP</td><td>Rutas Express + Vercel Functions</td><td>✅ Listo</td></tr>
+      <tr><td>4. Config despliegue</td><td>vercel.json · render.yaml · .env.example · README</td><td>✅ Listo</td></tr>
+      <tr><td>5. Verificación</td><td><code>npm install && npm run type-check && npm run build</code></td><td>⏳ En curso</td></tr>
+      <tr><td>6. Pruebas de integración</td><td>POST real con API keys</td><td>⏳ Pendiente</td></tr>
+      <tr><td>7. Interfaz web (panel)</td><td>Según prototipos de la sección 5</td><td>⏳ Pendiente</td></tr>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  Plan de implementación · Sistema de Prospección de Clientes · Generado con TypeScript/Node.js 2026
+</footer>
+
+</body>
+</html>
