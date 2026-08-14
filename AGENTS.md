@@ -27,6 +27,11 @@ No CI, no Prettier config, no `.github/`. `type-check` is the only working gate.
 - `src/config/supabase.ts` initializes the Supabase client **at module import time** and throws if `SUPABASE_URL`/`SUPABASE_KEY` are missing — any unit test or dev script importing `src/services/prospector` needs these set or it crashes on import.
 - All env vars: `.env.example`.
 
+## Vercel build quirks (hard-earned)
+
+- `vercel.json` uses `functions` (NOT `builds` — the two conflict), `outputDirectory: "dist"` (static-build requires a real output dir; `tsc` emits `dist/`), and explicit `routes` mapping `/api/*` to `api/*.ts`.
+- Do **not** set `runtime` inside `functions` — invalid syntax. Node version is pinned via `package.json` `"engines": { "node": "24.x" }` (Node 20 deprecated; `@supabase/supabase-js@2.112+` needs ≥22).
+
 ## Google Places & business rules
 
 - Uses the **new Places API v1**: POST `places:searchNearby` with `X-Goog-FieldMask` header (`src/config/google-places.ts`, `src/services/prospector.ts`). Not the legacy `textsearch`/`findplace`.
