@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "buildCommand": null,
-  "outputDirectory": null,
+  "outputDirectory": "dist",
   "functions": {
     "api/*.ts": {
       "memory": 1024,
