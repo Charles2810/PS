@@ -72,13 +72,33 @@ El backend:
 3. Inserta `prospectos` (upsert por `place_id`) y sus `diagnosticos` en Supabase.
 4. Devuelve un resumen de insertados y errores.
 
+## Límites de uso
+
+Para no superar el tier gratuito de la Google Places API (~1.000 llamadas/mes),
+las funciones de Vercel verifican dos límites antes de llamar a Google
+(`src/services/rateLimiter.ts`, contadores atómicos en Supabase, tabla `limites_uso`):
+
+| Límite | Clave env | Default |
+| --- | --- | --- |
+| Consultas por IP al día | `RATE_LIMIT_MAX_POR_DIA` | `10` |
+| Presupuesto mensual global | `PRESUPUESTO_MENSUAL_GOOGLE` | `800` |
+
+Al excederse se responde `429 Too Many Requests`. El límite por IP se reinicia
+a las 00:00 UTC; el mensual el día 1. Los conteos son por clave (`ip:{ip}:{día}` y
+`global:{mes}`) y se incrementan de forma atómica vía el RPC `consumir_uso`,
+por lo que son compartidos entre todas las instancias serverless.
+
+> Cada `POST /api/prospectar` autorizado equivale a **1 llamada** a Google Places
+> (los 20 resultados vienen en una sola respuesta). El presupuesto se consume
+> de forma conservadora: incluso las peticiones que luego fallan restan del contador.
+
 ## Despliegue
 
 ### Opción 1: Vercel (funciones serverless)
 
 1. Impulsa este repo a GitHub.
 2. En Vercel: *Add New Project* → importa el repo. Vercel detectará las rutas `api/*.ts` automáticamente.
-3. Añade las variables de entorno: `SUPABASE_URL`, `SUPABASE_KEY`, `GOOGLE_PLACES_API_KEY`, `CORS_ORIGIN`.
+3. Añade las variables de entorno: `SUPABASE_URL`, `SUPABASE_KEY`, `GOOGLE_PLACES_API_KEY`, `CORS_ORIGIN`, `RATE_LIMIT_MAX_POR_DIA`, `PRESUPUESTO_MENSUAL_GOOGLE`.
 4. *Deploy*. Nuestros endpoints quedan en:
    - `https://TU-PROYECTO.vercel.app/api/prospectar`
    - `https://TU-PROYECTO.vercel.app/api/health`

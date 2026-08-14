@@ -1,4 +1,5 @@
 import { prospectar } from '../src/services/prospector';
+import { verificarLimites } from '../src/services/rateLimiter';
 import { logger } from '../src/middleware/logger';
 import { DEFAULT_RADIO_METROS, TIPOS_POR_DEFECTO } from '../src/config/google-places';
 
@@ -42,6 +43,20 @@ export async function POST(request: Request) {
     const tipos = Array.isArray(body.tipos) && body.tipos.length > 0
       ? body.tipos
       : TIPOS_POR_DEFECTO;
+
+    const ip =
+      request.headers.get('x-real-ip') ??
+      request.headers.get('x-forwarded-for') ??
+      'desconocido';
+
+    const limite = await verificarLimites(ip);
+    if (!limite.permitido) {
+      const mensaje =
+        limite.motivo === 'mensual'
+          ? 'Se alcanzó el presupuesto mensual de consultas. Inténtalo el próximo mes.'
+          : 'Alcanzaste el límite diario de consultas. Inténtalo mañana.';
+      return Response.json({ success: false, error: mensaje }, { status: 429 });
+    }
 
     logger.info('Vercel: inicio de prospección', { latitud, longitud, radio });
 

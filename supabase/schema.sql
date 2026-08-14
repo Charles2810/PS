@@ -93,6 +93,44 @@ create policy "diagnosticos_update_policy"
     on public.diagnosticos for update using (true) with check (true);
 
 -- ============================================================
+-- TABLA: limites_uso
+-- Contadores compartidos para límites de uso por IP/día y presupuesto
+-- mensual global. Permite no superar el tier gratuito de la API de Google
+-- Places aun en entornos serverless (múltiples instancias / regiones).
+-- ============================================================
+create table if not exists public.limites_uso (
+    clave      text        primary key,
+    contador   integer     not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Incrementa el contador de forma atómica y devuelve si el consumo está permitido.
+create or replace function public.consumir_uso(p_clave text, p_max integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_contador integer;
+begin
+    insert into public.limites_uso (clave, contador)
+    values (p_clave, 1)
+    on conflict (clave)
+    do update set contador = public.limites_uso.contador + 1, updated_at = now()
+    returning contador into v_contador;
+
+    return v_contador <= p_max;
+end;
+$$;
+
+grant execute on function public.consumir_uso(text, integer) to anon, authenticated, service_role;
+
+-- RLS habilitada sin políticas: solo se accede vía la función security definer.
+alter table public.limites_uso enable row level security;
+
+-- ============================================================
 -- LIMPIEZA DE PERMISOS RECOMENDADA (producción):
 -- Revocar la anon key y dejar SOLO el service_role en el backend:
 -- revoke all on public.prospectos   from anon;

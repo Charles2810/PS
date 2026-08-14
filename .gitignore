@@ -7,3 +7,6 @@ logs/
 *.log
 .DS_Store
 Thumbs.db
+
+# Secretos (no subir)
+docs/dbpasswordspabase.txt
